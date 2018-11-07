@@ -1,0 +1,8 @@
+# Created by .ignore support plugin (hsz.mobi)
+/.idea
+/build
+/test
+.metadata
+.packages
+flutter_todolist.iml
+flutter_todolist_android.iml
