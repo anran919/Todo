@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_todolist/page/TodoPage.dart';
+import 'package:flutter_todolist/page/DonePage.dart';
+import 'package:flutter_todolist/view/NavigationIconView.dart';
 
 void main() {
   runApp(new MyApp());
@@ -24,11 +27,13 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   int _currentIndex = 0;
   List<NavigationIconView> _navigationViews;
+  List<Widget> pages;
   BottomNavigationBarType _type = BottomNavigationBarType.shifting;
 
   @override
   void initState() {
     super.initState();
+    pages = [new TodoPage(), new DonePage(), new TodoPage(), new DonePage()];
     _navigationViews = <NavigationIconView>[
       NavigationIconView(
         icon: const Icon(Icons.access_alarm),
@@ -72,6 +77,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    // 底部导航栏
     final BottomNavigationBar botNavBar = BottomNavigationBar(
       items: _navigationViews
           .map<BottomNavigationBarItem>(
@@ -81,111 +87,108 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       type: _type,
       onTap: (int index) {
         setState(() {
-          _navigationViews[_currentIndex].controller.reverse();
+//          _navigationViews[_currentIndex].controller.reverse();
+//          _currentIndex = index;
+//          _navigationViews[_currentIndex].controller.forward();
           _currentIndex = index;
-          _navigationViews[_currentIndex].controller.forward();
         });
       },
     );
     return new Scaffold(
-      appBar: new AppBar(
-        title: new Text('TODO'),
-      ),
+      appBar: _homeAppBar(),
       body: new Center(
         child: _buildTransitionsStack(),
       ),
       bottomNavigationBar: botNavBar,
-      floatingActionButton: new FloatingActionButton(
-        onPressed: () {},
-        tooltip: '添加',
-        child: new Icon(Icons.add),
-      ),
+      floatingActionButton: _floatingActionButton(),
     );
   }
 
+  // 内容显示按钮
   Widget _buildTransitionsStack() {
-    final List<FadeTransition> transitions = <FadeTransition>[];
+//    final List<FadeTransition> transitions = <FadeTransition>[];
+//
+//    for (NavigationIconView view in _navigationViews)
+//      transitions.add(view.transition(_type, context));
+//
+//    // We want to have the newly animating (fading in) views on top.
+//    transitions.sort((FadeTransition a, FadeTransition b) {
+//      final Animation<double> aAnimation = a.opacity;
+//      final Animation<double> bAnimation = b.opacity;
+//      final double aValue = aAnimation.value;
+//      final double bValue = bAnimation.value;
+//      return aValue.compareTo(bValue);
+//    });
 
-    for (NavigationIconView view in _navigationViews)
-      transitions.add(view.transition(_type, context));
+    return IndexedStack(
+      children: <Widget>[
+        new TodoPage(),
+        new DonePage(),
+        new TodoPage(),
+        new DonePage()
+      ],
+      index: _currentIndex,
+    );
+  }
 
-    // We want to have the newly animating (fading in) views on top.
-    transitions.sort((FadeTransition a, FadeTransition b) {
-      final Animation<double> aAnimation = a.opacity;
-      final Animation<double> bAnimation = b.opacity;
-      final double aValue = aAnimation.value;
-      final double bValue = bAnimation.value;
-      return aValue.compareTo(bValue);
+  // 添加按钮
+  Widget _floatingActionButton() {
+    return new Builder(builder: (BuildContext context) {
+      return FloatingActionButton(
+        onPressed: () {
+          Scaffold.of(context).showSnackBar(SnackBar(
+            content: Text('添加一个Todo'),
+            action: SnackBarAction(
+                label: 'ACTION',
+                onPressed: () {
+                  Scaffold.of(context).showSnackBar(
+                      SnackBar(content: Text('You pressed snackbar action.')));
+                }),
+          ));
+        },
+        tooltip: '添加',
+        child: new Icon(Icons.add),
+      );
     });
-
-    return Stack(children: transitions);
-  }
-}
-
-class NavigationIconView {
-  NavigationIconView({
-    Widget icon,
-    Widget activeIcon,
-    String title,
-    Color color,
-    TickerProvider vsync,
-  })  : _icon = icon,
-        _color = color,
-        _title = title,
-        item = BottomNavigationBarItem(
-          icon: icon,
-          activeIcon: activeIcon,
-          title: Text(title),
-          backgroundColor: color,
-        ),
-        controller = AnimationController(
-          duration: kThemeAnimationDuration,
-          vsync: vsync,
-        ) {
-    _animation = controller.drive(CurveTween(
-      curve: const Interval(0.5, 1.0, curve: Curves.fastOutSlowIn),
-    ));
   }
 
-  final Widget _icon;
-  final Color _color;
-  final String _title;
-  final BottomNavigationBarItem item;
-  final AnimationController controller;
-  Animation<double> _animation;
+  Widget _homeAppBar() {
+    return new AppBar(
+      title: const Text('TODO'),
+      actions: <Widget>[
+        PopupMenuButton(
+          itemBuilder: (BuildContext context) {
+            return <PopupMenuItem>[
+              new PopupMenuItem(
+                child: new Text('Setting'),
+              ),
+              new PopupMenuItem(
+                child: new Text('Share'),
+              ),
+            ];
+          },
+          onSelected: (index) {},
+        )
 
-  FadeTransition transition(
-      BottomNavigationBarType type, BuildContext context) {
-    Color iconColor;
-    if (type == BottomNavigationBarType.shifting) {
-      iconColor = _color;
-    } else {
-      final ThemeData themeData = Theme.of(context);
-      iconColor = themeData.brightness == Brightness.light
-          ? themeData.primaryColor
-          : themeData.accentColor;
-    }
-
-    return FadeTransition(
-      opacity: _animation,
-      child: SlideTransition(
-        position: _animation.drive(
-          Tween<Offset>(
-            begin: const Offset(0.0, 0.02), // Slightly down.
-            end: Offset.zero,
-          ),
-        ),
-        child: IconTheme(
-          data: IconThemeData(
-            color: iconColor,
-            size: 120.0,
-          ),
-          child: Semantics(
-            label: 'Placeholder for $_title tab',
-            child: _icon,
-          ),
-        ),
-      ),
+        /// 修改底部导航栏的样式
+//        PopupMenuButton<BottomNavigationBarType>(
+//          onSelected: (BottomNavigationBarType value) {
+//            setState(() {
+//              _type = value;
+//            });
+//          },
+//          itemBuilder: (BuildContext context) => <PopupMenuItem<BottomNavigationBarType>>[
+//            const PopupMenuItem<BottomNavigationBarType>(
+//              value: BottomNavigationBarType.fixed,
+//              child: Text('Fixed'),
+//            ),
+//            const PopupMenuItem<BottomNavigationBarType>(
+//              value: BottomNavigationBarType.shifting,
+//              child: Text('Shifting'),
+//            )
+//          ],
+//        )
+      ],
     );
   }
 }
