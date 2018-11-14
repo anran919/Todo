@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_todolist/page/TodoPage.dart';
-import 'package:flutter_todolist/page/DonePage.dart';
+import 'package:flutter_todolist/page/PestoDemo.dart';
+import 'package:flutter_todolist/LoginPage.dart';
 import 'package:flutter_todolist/view/NavigationIconView.dart';
 
 void main() {
-  runApp(new MyApp());
+//  runApp(new MyApp());
+  runApp(new LoginPage());
 }
 
 class MyApp extends StatelessWidget {
@@ -33,7 +35,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    pages = [new TodoPage(), new DonePage(), new TodoPage(), new DonePage()];
+    pages = [new TodoPage(), new PestoDemo(), new TodoPage(), new PestoDemo()];
     _navigationViews = <NavigationIconView>[
       NavigationIconView(
         icon: const Icon(Icons.access_alarm),
@@ -123,9 +125,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     return IndexedStack(
       children: <Widget>[
         new TodoPage(),
-        new DonePage(),
+        new PestoDemo(),
         new TodoPage(),
-        new DonePage()
+        new PestoDemo()
       ],
       index: _currentIndex,
     );
